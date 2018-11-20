@@ -11,45 +11,49 @@
 #include <string.h>
 
 char ** parse_args(char* line){
-  char** ary = calloc(6, sizeof(char*));
+  char** arr = calloc(6, sizeof(char*));
   int i = 0;
   char * k;
-  char * m = " ";
+  char * m = "";
   int ctr = 0;
   for(i; i < 6; i++){
-    if (m == k && ctr != 1){
-      ary[i] = m;
-      ctr ++;
-    }
-    if (m == k)
-      ary[i] = NULL;
+    
     //strseps
     if (m != k){
-      k = strsep(&line, " ");
-      ary[i] = k;
+      k = strsep(&line, " \n ");
+      arr[i] = k;
     }
+    else if (m == k){
+      arr[i] = NULL;
+    }
+     
     m = line;
-    printf("in array[%d]: %s\n", i, ary[i]);
-    printf("still need to parse: %s\n", line);
+    if (strsep(&m, "") == NULL)
+	arr[i] = NULL;
+   
+    //printf("in array[%d]: %s\n", i, arr[i]);
+    //printf("still need to parse: %s\n", line);
   }
   
-  return ary;
+  return arr;
 }
 
 
 
 int main(int argc, char * argv[]){
-  printf("type something:"); //maybe pwd or getcwd 
-   char * input = malloc(sizeof(char *)); 
-   fgets(input, sizeof(char *), stdin); 
-  
-   //char ex[100] = "ls -a -l";
-   // char * input = ex; 
-  char** command; 
-  command = parse_args(input);
-  execvp(command[0], command);
-  
-  return 0;
+  while (1){
+    printf("type something:"); //maybe pwd or getcwd 
+    char * input = malloc(sizeof(char *)); 
+    fgets(input, 100, stdin); 
+
+    //figure out how to parse
+    //char ex[100] = "ls -a -l";
+    //char * input = ex; 
+    char** command; 
+    command = parse_args(input);
+    execvp(command[0], command);
+  }
+  //return 0;
 
 }
 

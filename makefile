@@ -3,6 +3,6 @@ all: shell.o
 run:
 	./a.out
 clean:
-	rm -rf ./a.out
-shell.o:
+	rm -f ./a.out shell.o
+shell.o: shell.h
 	gcc -c shell.c
