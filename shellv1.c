@@ -75,8 +75,6 @@ char ** parse_argsspace(char* line){
 
 int main(int argc, char * argv[]){
   int stat;
-  int n;
-  int i;
   while (1){
     printf("type something:"); //maybe pwd or getcwd 
     char * input = malloc(sizeof(char *)); 
@@ -86,19 +84,8 @@ int main(int argc, char * argv[]){
     if (fork() == 0){ 
       char** command;
       char** commandsemi;
-      commandsemi = parse_args(input);
-
-      i = 0;
-      while (commandsemi[i] != NULL){
-	
-	command = parse_argsspace(commandsemi[i]);
-	  
-	execvp(command[0], command);
-
-	command = malloc(100 * sizeof(char *));
-	
-	i++;
-      }
+      command = parse_argsspace(input);
+      execvp(command[0], command);
     }
 
     //parent process 
@@ -113,40 +100,3 @@ int main(int argc, char * argv[]){
   //return 0;
 
 }
-
-
-
-
-// forking process
-
-/* int randfd; */
-/* int arr[0]; */
-/* int stat; */
-/* int l; */
-/* int m; */
-
- 
-/* printf("beginning of parent\n"); */
-
-/*   //child process */
-/*   if (fork() == 0){ */
-/*     randfd = open("/dev/random", O_RDONLY); */
-/*     l = read(randfd, arr, sizeof(int)); */
-/*     m = close(randfd); */
-  
-/*     l = (l % 15) + 5; */
-/*     sleep(l); */
-/*     printf("child finished sleeping\n"); */
-
-/*     printf("The child slept for %d seconds\n", l); */
-/*     return 0; */
-/*   } */
-
-/*   //parent process */
-/*   else{ */
-/*     printf("parent is waiting for child to finish:\n"); */
-/*     waitpid(-1,&stat,0); */
-/*     if (WIFEXITED(stat)){ */
-/* 	printf("parent is done waiting\n"); */
-/*     } */
-/*   } */
