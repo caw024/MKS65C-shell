@@ -10,15 +10,47 @@
 #include <sys/stat.h>
 #include <string.h>
 
+//splits ; to get separate lines
 char ** parse_args(char* line){
   char** arr = calloc(6, sizeof(char*));
   int i = 0;
   char * k;
   char * m = "";
-  int ctr = 0;
+
   for(i; i < 6; i++){
     
-    //strseps
+    //strseps for arguments
+    if (m != k){
+      k = strsep(&line, ";");
+      arr[i] = k);
+    }
+    else if (m == k){
+      arr[i] = NULL;
+    }
+     
+    m = line;
+    if (strsep(&m, "") == NULL)
+      arr[i] = NULL;
+   
+    printf("in array[%d]: %s\n", i, arr[i]);
+    printf("still need to parse: %s\n", line);
+  }
+  
+  
+  return arr;
+}
+
+
+//splits " " to get separate arguments
+char ** parse_argsspace(char* line){
+  char** arr = calloc(6, sizeof(char*));
+  int i = 0;
+  char * k;
+  char * m = "";
+
+  for(i; i < 6; i++){
+    
+    //strseps for arguments
     if (m != k){
       k = strsep(&line, " \n ");
       arr[i] = k;
@@ -29,11 +61,12 @@ char ** parse_args(char* line){
      
     m = line;
     if (strsep(&m, "") == NULL)
-	arr[i] = NULL;
+      arr[i] = NULL;
    
     //printf("in array[%d]: %s\n", i, arr[i]);
     //printf("still need to parse: %s\n", line);
   }
+  
   
   return arr;
 }
@@ -46,9 +79,7 @@ int main(int argc, char * argv[]){
     char * input = malloc(sizeof(char *)); 
     fgets(input, 100, stdin); 
 
-    //figure out how to parse
-    //char ex[100] = "ls -a -l";
-    //char * input = ex; 
+
     char** command; 
     command = parse_args(input);
     execvp(command[0], command);
