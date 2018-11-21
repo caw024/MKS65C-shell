@@ -32,8 +32,8 @@ char ** parse_args(char* line){
     if (strsep(&m, "") == NULL)
       arr[i] = NULL;
    
-    //printf("; in array[%d]: %s\n", i, arr[i]);
-    //printf("; still need to parse: %s\n", line);
+    printf("; in array[%d]: %s\n", i, arr[i]);
+    printf("; still need to parse: %s\n", line);
   }
   
   
