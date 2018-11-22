@@ -12,16 +12,17 @@
 
 //splits ; to get separate lines
 char ** parse_args(char* line){
-  char** arr = calloc(6, sizeof(char*));
+  char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;
   char * m = "";
 
-  for(i; i < 6; i++){
+  for(i; i < 5; i++){
     
     //strseps for arguments
     if (m != k){
       k = strsep(&line, ";");
+      strsep(&line, " ");
       arr[i] = k;
     }
     else if (m == k){
@@ -29,26 +30,25 @@ char ** parse_args(char* line){
     }
      
     m = line;
-    if (strsep(&m, "") == NULL)
-      arr[i] = NULL;
+    // if (strsep(&m, "") == NULL)
+    //arr[i] = NULL;
    
-    printf("; in array[%d]: %s\n", i, arr[i]);
-    printf("; still need to parse: %s\n", line);
-  }
-  
-  
+    //printf("; in array[%d]:%s\n", i, arr[i]);
+    //printf("; still need to parse:%s\n", line);
+  }  
   return arr;
 }
 
 
 //splits " " to get separate arguments
 char ** parse_argsspace(char* line){
-  char** arr = calloc(6, sizeof(char*));
+  char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;
-  char * m = "";
-
-  for(i; i < 6; i++){
+  char * m = "  ";
+  char * test;
+  
+  for(i; i < 5; i++){
     
     //strseps for arguments
     if (m != k){
@@ -60,13 +60,12 @@ char ** parse_argsspace(char* line){
     }
      
     m = line;
-    if (strsep(&m, "") == NULL)
+    if (m == " " || strsep(&m, "") == NULL)
       arr[i] = NULL;
    
-    // printf("in array[%d]: %s\n", i, arr[i]);
-    //printf("still need to parse: %s\n", line);
-  }
-  
+    //printf("in array(space)[%d]:%s\n", i, arr[i]);
+    //printf("still need to parse:%s\n", line);
+  }  
   
   return arr;
 }
@@ -77,39 +76,41 @@ int main(int argc, char * argv[]){
   int stat;
   int n;
   int i;
+  //char test[100] = "ls -l ; echo hello ; ls -a ";
+  //char *input = test;
   while (1){
-    printf("type something:"); //maybe pwd or getcwd 
+    printf("\n-------------------------------\n");
+    printf("type something:"); //maybe pwd or getcwd
+    printf("\n");
     char * input = malloc(sizeof(char *)); 
-    fgets(input, 100, stdin); 
+    fgets(input, 100, stdin);
 
-    //child process 
-    if (fork() == 0){ 
-      char** command;
-      char** commandsemi;
-      commandsemi = parse_args(input);
 
-      i = 0;
-      while (commandsemi[i] != NULL){
-	
-	command = parse_argsspace(commandsemi[i]);
-	  
-	execvp(command[0], command);
+    char** command;
+    char** commandsemi;
+    commandsemi = parse_args(input);
 
-	command = malloc(100 * sizeof(char *));
-	
-	i++;
+    i = 0;
+    while (i < 5){
+      command = parse_argsspace(commandsemi[i]);
+      i++;
+
+      //child process
+      if (fork() == 0){
+	printf("running: %s %s\n", command[0], command[1]);
+	if (execvp(command[0], command) == -1){
+	  printf("Something went wrong: %s\n", strerror(errno));
+	}			
       }
-    }
 
-    //parent process 
-    else{ 
-      waitpid(-1,&stat,0); 
-      if (WIFEXITED(stat)){ 
-	printf("\n"); 
-      } 
-    } 
-
+      //parent process   
+      else{
+        waitpid(-1,&stat,0); 
+	if (WIFEXITED(stat)){ 
+	  printf("parent done\n"); 
+	}
+      }     
+    }    
   }
-  //return 0;
-
+  return 0;
 }
