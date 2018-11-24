@@ -28,6 +28,7 @@ int main(int argc, char * argv[]){
 
     char** command;
     char** commandsemi;
+    char * first;
     commandsemi = parse_argssemi(input);
 
     i = 0;
@@ -36,9 +37,16 @@ int main(int argc, char * argv[]){
       i++;
 
       //child process
+      first = command[0];
       if (fork() == 0){
-	printf("running: %s %s\n", command[0], command[1]);
-	if (execvp(command[0], command) == -1){
+	printf("running: %s,%s\n", first, command[1]);
+	if (first == "exit"){
+	  printf("you exit by killing\n");
+	}
+	else if (first == "cd"){
+	  printf("change directory somehow\n");
+	}
+	else if (execvp(command[0], command) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
 	}			
       }
