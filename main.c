@@ -24,11 +24,10 @@ int main(int argc, char * argv[]){
     printf("\n");
     char * input = malloc(sizeof(char *)); 
     fgets(input, 100, stdin);
-
-
+    
     char** command;
     char** commandsemi;
-    char * first;
+ 
     commandsemi = parse_argssemi(input);
 
     i = 0;
@@ -36,16 +35,21 @@ int main(int argc, char * argv[]){
       command = parse_argsspace(commandsemi[i]);
       i++;
 
+      char * first = command[0];
+      printf("running: %s,%s\n", first, command[1]);
+     
       //child process
-      first = command[0];
       if (fork() == 0){
-	printf("running: %s,%s\n", first, command[1]);
-	if (first == "exit"){
-	  printf("you exit by killing\n");
+ 
+	if (strcmp(first, "cd") == 0){
+	  printf("You cd now\n");
 	}
-	else if (first == "cd"){
-	  printf("change directory somehow\n");
+	
+	else if (strcmp(first, "exit") == 0){
+	  printf("You exit now\n");
+	  
 	}
+	
 	else if (execvp(command[0], command) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
 	}			
@@ -57,7 +61,8 @@ int main(int argc, char * argv[]){
 	if (WIFEXITED(stat)){ 
 	  printf("parent done\n"); 
 	}
-      }     
+      }
+      
     }    
   }
   return 0;
