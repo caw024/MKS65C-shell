@@ -59,7 +59,7 @@ int main(int argc, char * argv[]){
 	  printf("Something went wrong: %s\n", strerror(errno));
 	}
 
-	signal(SIGKILL, child_kill);
+	signal(SIGTERM, child_kill);
 
       }
 

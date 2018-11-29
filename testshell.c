@@ -121,8 +121,12 @@ int main(int argc, char * argv[]){
 
       //parent process   
       else{
-        waitpid(-1,&stat,0); 
-	if (WIFEXITED(stat)){ 
+        waitpid(-1,&stat,0);
+	if (WIFSIGNALED(stat)){
+	  printf("exiting\n");
+	  return 0;
+	}
+	else if (WIFEXITED(stat)){ 
 	  printf("parent done\n");
 	}
       }
