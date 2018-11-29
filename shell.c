@@ -12,6 +12,7 @@
 
 #include "shell.h"
 
+
 //splits ; to get separate lines
 char ** parse_argssemi(char *line){
   char** arr = calloc(5, sizeof(char*));
