@@ -81,7 +81,12 @@ int main(int argc, char * argv[]){
   while (1){
     
     printf("\n-------------------------------\n");
-    printf("type something:"); //maybe pwd or getcwd
+    char cwd[100];
+
+    //specific help from stack overflow after getting random characters as outputs
+    if (getcwd(cwd, sizeof(cwd)) != NULL){
+      printf("cwd: %s: ",cwd);
+    }
     printf("\n");
     char * input = malloc(sizeof(char *)); 
     fgets(input, 100, stdin);
@@ -92,26 +97,30 @@ int main(int argc, char * argv[]){
     commandsemi = parse_argssemi(input);
 
     i = 0;
-    //do piping and >, >>, <, <<
+
     while (i < 5){
       command = parse_argsspace(commandsemi[i]);
       i++;
 
       char * first = command[0];
       printf("running: %s,%s\n", first, command[1]);
+
+      //exits
+      if (first != NULL && strcmp(first, "exit") == 0){
+	printf("You exit now\n");
+	return 0;
+      }	
      
       //child process
       if (fork() == 0){
 
 	//cd
 	if (strcmp(first, "cd") == 0){
-	  printf("You cd now\n");
+	  if (chdir(command[1]) == -1)
+	    printf("Something went wrong: %s\n", strerror(errno));
 	}
 
-	//exit
-	else if (strcmp(first, "exit") == 0){
-	  printf("You exit now\n");
-	}
+	//do piping (with popen) and >, >>, <, <<
 	
 	else if (execvp(command[0], command) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
@@ -122,13 +131,9 @@ int main(int argc, char * argv[]){
       //parent process   
       else{
         waitpid(-1,&stat,0);
-	if (WIFSIGNALED(stat)){
-	  printf("exiting\n");
-	  return 0;
-	}
-	else if (WIFEXITED(stat)){ 
+	if (WIFEXITED(stat)){ 
 	  printf("parent done\n");
-	}
+	}	
       }
       
     }    
