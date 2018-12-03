@@ -10,6 +10,8 @@
 #include <sys/stat.h>
 #include <string.h>
 
+#define READ 0
+#define WRITE 1
 
 //splits ; to get separate lines
 char ** parse_argssemi(char *line){
@@ -41,6 +43,7 @@ char ** parse_argssemi(char *line){
 }
 
 
+
 //splits " " to get separate arguments
 char ** parse_argsspace(char *line){
   char** arr = calloc(5, sizeof(char*));
@@ -63,11 +66,8 @@ char ** parse_argsspace(char *line){
     m = line;
     if (m == " " || strsep(&m, "") == NULL)
       arr[i] = NULL;
-   
-    //printf("in array(space)[%d]:%s\n", i, arr[i]);
-    //printf("still need to parse:%s\n", line);
+
   }  
-  
   return arr;
 }
 
@@ -76,6 +76,8 @@ int main(int argc, char * argv[]){
   int stat;
   int n;
   int i;
+  int fin, fout;
+  int fdin,fdout;
   //char test[100] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
@@ -83,7 +85,7 @@ int main(int argc, char * argv[]){
     printf("\n-------------------------------\n");
     char cwd[100];
 
-    //specific help from stack overflow after getting random characters as outputs
+    //specific help from stack overflow to get random characters as outputs
     if (getcwd(cwd, sizeof(cwd)) != NULL){
       printf("cwd: %s: ",cwd);
     }
@@ -114,12 +116,24 @@ int main(int argc, char * argv[]){
       //child process
       if (fork() == 0){
 
+	//piping only
+	if (command[1] != NULL && command[2] != NULL && strcmp(command[1], "|") == 0){
+	  printf("Starting\n");
+	  int fd = open(command[0], O_READ);
+	  FILE *filein = popen(command[0],"r");
+	  FILE *fileout = popen(command[2],"w");
+
+
+	}
+
+	
 	//cd
 	if (strcmp(first, "cd") == 0){
 	  if (chdir(command[1]) == -1)
 	    printf("Something went wrong: %s\n", strerror(errno));
-	}
+	}	
 
+		 
 	//do piping (with popen) and >, >>, <, <<
 	
 	else if (execvp(command[0], command) == -1){
@@ -127,17 +141,16 @@ int main(int argc, char * argv[]){
 	}
 
       }
-
       //parent process   
       else{
-        waitpid(-1,&stat,0);
+	waitpid(-1,&stat,0);
 	if (WIFEXITED(stat)){ 
 	  printf("parent done\n");
 	}	
-      }
-      
+      }      
     }    
   }
   return 0;
 }
 
+  
