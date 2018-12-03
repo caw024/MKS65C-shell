@@ -5,7 +5,7 @@ The shell can fork + execute commands in a line (separated by semicolons).
 
 
 A description of what features you attempted to implement but were unsuccessful:
-I couldn't get redirecting and piping to work out.
+I couldn't get redirecting and piping to work out (progress on them can be found in comments section of code).
 
 
 Any bugs or things you want me to know about your program:
