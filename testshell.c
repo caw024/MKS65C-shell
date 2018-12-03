@@ -13,8 +13,85 @@
 #define READ 0
 #define WRITE 1
 
+//splits | to get separate lines
+char ** parse_pipe(char *line){
+  char** arr = calloc(3, sizeof(char*));
+  int i = 0;
+  char * k;
+  char * m = "";
+
+  for(i; i < 3; i++){
+    
+    //strseps for arguments
+    if (m != k){
+      k = strsep(&line, "|");
+      strsep(&line, " ");
+      arr[i] = k;
+    }
+    else if (m == k){
+      arr[i] = NULL;
+    }
+     
+    m = line;
+  }  
+  return arr;
+}
+
+
+
+
+//splits | to get separate lines
+char ** parse_greater(char *line){
+  char** arr = calloc(3, sizeof(char*));
+  int i = 0;
+  char * k;
+  char * m = "";
+
+  for(i; i < 3; i++){
+    
+    //strseps for arguments
+    if (m != k){
+      k = strsep(&line, ">");
+      strsep(&line, " ");
+      arr[i] = k;
+    }
+    else if (m == k){
+      arr[i] = NULL;
+    }
+     
+    m = line;
+  }  
+  return arr;
+}
+
+
+//splits | to get separate lines
+char ** parse_less(char *line){
+  char** arr = calloc(3, sizeof(char*));
+  int i = 0;
+  char * k;
+  char * m = "";
+
+  for(i; i < 3; i++){
+    
+    //strseps for arguments
+    if (m != k){
+      k = strsep(&line, "<");
+      strsep(&line, " ");
+      arr[i] = k;
+    }
+    else if (m == k){
+      arr[i] = NULL;
+    }
+     
+    m = line;
+  }  
+  return arr;
+}
+
+
 //splits ; to get separate lines
-char ** parse_argssemi(char *line){
+char ** parse_semi(char *line){
   char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;
@@ -45,7 +122,7 @@ char ** parse_argssemi(char *line){
 
 
 //splits " " to get separate arguments
-char ** parse_argsspace(char *line){
+char ** parse_space(char *line){
   char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;
@@ -93,61 +170,79 @@ int main(int argc, char * argv[]){
     char * input = malloc(sizeof(char *)); 
     fgets(input, 100, stdin);
     
-    char** command;
-    char** commandsemi;
- 
-    commandsemi = parse_argssemi(input);
+    char **command;
+    char **commandsemi;
+    char **commandpipe;
+    char **commandgreater;
+    char **commandless;
+
+    commandsemi = parse_semi(input);
 
     i = 0;
 
     while (i < 5){
-      command = parse_argsspace(commandsemi[i]);
+      //piping only
+      char readbuf[100];
+
+      commandpipe = parse_pipe(commandsemi[i]);
+      commandgreater = parse_greater(commandsemi[i]);
+      commandless = parse_less(commandsemi[i]);
+      command = parse_space(commandsemi[i]);
+
       i++;
 
-      char * first = command[0];
-      printf("running: %s,%s\n", first, command[1]);
+      //googled how popen works and implemented it
+      if (commandpipe[0] != NULL && commandpipe[1] != NULL){
+	printf("%s, %s\n", commandpipe[0], commandpipe[1]);
+	int fd = open(commandpipe[0], O_CREAT | O_RDONLY);
+	FILE *filein = popen(commandpipe[0],"r");
+	FILE *fileout = popen(commandpipe[1],"w");
 
-      //exits
-      if (first != NULL && strcmp(first, "exit") == 0){
-	printf("You exit now\n");
-	return 0;
-      }	
-     
-      //child process
-      if (fork() == 0){
+	fgets(readbuf,100,filein);
+	fputs(readbuf,fileout);
 
-	//piping only
-	if (command[1] != NULL && command[2] != NULL && strcmp(command[1], "|") == 0){
-	  printf("Starting\n");
-	  int fd = open(command[0], O_READ);
-	  FILE *filein = popen(command[0],"r");
-	  FILE *fileout = popen(command[2],"w");
+	pclose(filein);
+	pclose(fileout);
+      }
 
+      
 
-	}
+      else{    
 
-	
-	//cd
-	if (strcmp(first, "cd") == 0){
-	  if (chdir(command[1]) == -1)
-	    printf("Something went wrong: %s\n", strerror(errno));
+	char * first = command[0];
+	printf("running: %s,%s\n", first, command[1]);
+
+	//exits
+	if (first != NULL && strcmp(first, "exit") == 0){
+	  printf("You exit now\n");
+	  return 0;
 	}	
+     
+	//child process
+	if (fork() == 0){
+	
+	  //cd
+	  if (strcmp(first, "cd") == 0){
+	    if (chdir(command[1]) == -1)
+	      printf("Something went wrong: %s\n", strerror(errno));
+	  }	
 
 		 
-	//do piping (with popen) and >, >>, <, <<
+	  //do piping (with popen) and >, >>, <, <<
 	
-	else if (execvp(command[0], command) == -1){
-	  printf("Something went wrong: %s\n", strerror(errno));
-	}
+	  else if (execvp(command[0], command) == -1){
+	    printf("Something went wrong: %s\n", strerror(errno));
+	  }
 
+	}
+	//parent process   
+	else{
+	  waitpid(-1,&stat,0);
+	  if (WIFEXITED(stat)){ 
+	    printf("parent done\n");
+	  }	
+	}
       }
-      //parent process   
-      else{
-	waitpid(-1,&stat,0);
-	if (WIFEXITED(stat)){ 
-	  printf("parent done\n");
-	}	
-      }      
     }    
   }
   return 0;
