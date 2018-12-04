@@ -13,8 +13,8 @@ I couldn't get redirecting stdout (returns "input file is not output file") and 
 
 Any bugs or things you want me to know about your program: <br />
 
-Extraneous spaces in the command line might make a command invalid. <br />
-Redirecting via stdin can cause the program to end (although it does run).
+*Extraneous spaces in the command line might make a command invalid. <br />
+*Redirecting via stdin can cause the program to end (although it does run).
 
 
 A copy of every function header:
