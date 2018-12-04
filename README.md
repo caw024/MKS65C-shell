@@ -5,7 +5,7 @@ The shell can fork + execute commands in a line (separated by semicolons) and re
 
 
 A description of what features you attempted to implement but were unsuccessful:
-I couldn't get redirecting stdout (returns "input file is not output file") and piping to work out properly. (progress on them can be found in comments section of code).
+I couldn't get redirecting stdout (returns "input file is not output file") and piping (returns something, but not what we want) to work out properly (progress on them can be found in comments section of code).
 
 
 Any bugs or things you want me to know about your program:
