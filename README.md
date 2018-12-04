@@ -15,7 +15,7 @@ Redirecting via stdin can cause the program to end (although it does run).
 
 A copy of every function header:
 
-return type: char ** (pointer to a char pointer)
+return type: char ** (pointer to a char pointer)\n
 arguments: char * (a string)
 fxn: parses the pipes in a given line to get arguments
 char ** parse_pipe(char *line);
