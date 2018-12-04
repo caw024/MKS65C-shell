@@ -44,4 +44,5 @@ char ** parse_semi(char *line);
 //fxn: parses spaces in a given line to get arguments<br />
 char ** parse_space(char *line);
 
-* I consulted stack overflow and other websites for some help on pieces of code as listed inside it.
+Important Note: <br />
+I consulted stack overflow and other websites for some help on pieces of code I had trouble with (and still don't work). The specific parts are listed inside the code.
