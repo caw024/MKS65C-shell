@@ -1,5 +1,5 @@
 # MKS65C-shell
-# Calvin Aw
+Calvin Aw
 
 A description of what features your shell implements:
 The shell can fork + execute commands in a line (separated by semicolons) and redirect via stdin. cd and exit work properly.
