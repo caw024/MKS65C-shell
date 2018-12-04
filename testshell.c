@@ -10,12 +10,11 @@
 #include <sys/stat.h>
 #include <string.h>
 
-#define READ 0
-#define WRITE 1
+
 
 //splits | to get separate lines
 char ** parse_pipe(char *line){
-  char** arr = calloc(3, sizeof(char*));
+  char** arr = calloc(4, sizeof(char*));
   int i = 0;
   char * k;
   char * m = "";
@@ -40,52 +39,40 @@ char ** parse_pipe(char *line){
 
 
 
-//splits | to get separate lines
+//splits > to get separate lines
 char ** parse_greater(char *line){
-  char** arr = calloc(3, sizeof(char*));
-  int i = 0;
+  char** arr = calloc(4, sizeof(char*));
   char * k;
   char * m = "";
 
-  for(i; i < 3; i++){
     
-    //strseps for arguments
-    if (m != k){
-      k = strsep(&line, ">");
-      strsep(&line, " ");
-      arr[i] = k;
-    }
-    else if (m == k){
-      arr[i] = NULL;
-    }
-     
-    m = line;
-  }  
+  //strseps for arguments
+  if (m != k){
+    k = strsep(&line, ">");
+    strsep(&line, " ");
+    arr[0] = k;
+  }
+  arr[1] = strsep(&line, " \n");
+ 
   return arr;
 }
 
 
-//splits | to get separate lines
+//splits < to get separate lines
 char ** parse_less(char *line){
-  char** arr = calloc(3, sizeof(char*));
-  int i = 0;
+  char** arr = calloc(4, sizeof(char*));
   char * k;
   char * m = "";
 
-  for(i; i < 3; i++){
     
-    //strseps for arguments
-    if (m != k){
-      k = strsep(&line, "<");
-      strsep(&line, " ");
-      arr[i] = k;
-    }
-    else if (m == k){
-      arr[i] = NULL;
-    }
-     
-    m = line;
-  }  
+  //strseps for arguments
+  if (m != k){
+    k = strsep(&line, "<");
+    strsep(&line, " ");
+    arr[0] = k;
+  }
+  arr[1] = strsep(&line, " \n");
+ 
   return arr;
 }
 
@@ -126,7 +113,7 @@ char ** parse_space(char *line){
   char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;
-  char * m = "  ";
+  char * m = " ";
   char * test;
   
   for(i; i < 5; i++){
@@ -154,7 +141,6 @@ int main(int argc, char * argv[]){
   int n;
   int i;
   int fin, fout;
-  int fdin,fdout;
   //char test[100] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
@@ -188,12 +174,10 @@ int main(int argc, char * argv[]){
       commandgreater = parse_greater(commandsemi[i]);
       commandless = parse_less(commandsemi[i]);
       command = parse_space(commandsemi[i]);
-
       i++;
 
-      //googled how popen works and implemented it
+      //found how popen works online and implemented it
       if (commandpipe[0] != NULL && commandpipe[1] != NULL){
-	printf("%s, %s\n", commandpipe[0], commandpipe[1]);
 	int fd = open(commandpipe[0], O_CREAT | O_RDONLY);
 	FILE *filein = popen(commandpipe[0],"r");
 	FILE *fileout = popen(commandpipe[1],"w");
@@ -203,17 +187,48 @@ int main(int argc, char * argv[]){
 
 	pclose(filein);
 	pclose(fileout);
+	close(fd);
       }
 
-      
+      //stack exchange provided me a summary of how redirection works
+      else if (commandless[0] != NULL && commandless[1] != NULL){
+	fin = dup(0);
+	int fd = open(commandless[1],  O_RDONLY);
+	dup2(fd, 0);
+	close(fd);
+	 
+	//child process
+	if (command[0] != NULL && execvp(commandless[0], commandless) == -1){
+	  printf("Something went wrong: %s\n", strerror(errno));
+	}
+		
+	dup2(0,fin);
+      }
+
+      else if (commandgreater[0] != NULL && commandgreater[1] != NULL){
+	fin = dup(0);
+	fout = dup(1);
+	
+	int fd = open(commandgreater[1],  O_CREAT | O_WRONLY);
+	int fd2 = open(commandgreater[0], O_RDONLY);
+	dup2(fd, 1);
+	dup2(fd2, 0);
+	close(fd);
+	close(fd2);
+
+	if (command[0] != NULL && execvp("grep", commandgreater) == -1){
+	  printf("Something went wrong: %s\n", strerror(errno));
+	}
+
+	dup2(0, fin);
+	dup2(1,fout);
+      }
 
       else{    
-
-	char * first = command[0];
-	printf("running: %s,%s\n", first, command[1]);
+	//printf("running: %s,%s\n", command[0], command[1]);
 
 	//exits
-	if (first != NULL && strcmp(first, "exit") == 0){
+	if (command[0] != NULL && strcmp(command[0], "exit") == 0){
 	  printf("You exit now\n");
 	  return 0;
 	}	
@@ -222,13 +237,10 @@ int main(int argc, char * argv[]){
 	if (fork() == 0){
 	
 	  //cd
-	  if (strcmp(first, "cd") == 0){
+	  if (strcmp(command[0], "cd") == 0){
 	    if (chdir(command[1]) == -1)
 	      printf("Something went wrong: %s\n", strerror(errno));
 	  }	
-
-		 
-	  //do piping (with popen) and >, >>, <, <<
 	
 	  else if (execvp(command[0], command) == -1){
 	    printf("Something went wrong: %s\n", strerror(errno));
@@ -243,9 +255,9 @@ int main(int argc, char * argv[]){
 	  }	
 	}
       }
-    }    
+
+    }   
   }
-  return 0;
 }
 
   

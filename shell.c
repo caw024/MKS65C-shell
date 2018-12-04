@@ -13,8 +13,74 @@
 #include "shell.h"
 
 
+
+//splits | to get separate lines
+char ** parse_pipe(char *line){
+  char** arr = calloc(4, sizeof(char*));
+  int i = 0;
+  char * k;
+  char * m = "";
+
+  for(i; i < 3; i++){
+    
+    //strseps for arguments
+    if (m != k){
+      k = strsep(&line, "|");
+      strsep(&line, " ");
+      arr[i] = k;
+    }
+    else if (m == k){
+      arr[i] = NULL;
+    }
+     
+    m = line;
+  }  
+  return arr;
+}
+
+
+
+
+//splits > to get separate lines
+char ** parse_greater(char *line){
+  char** arr = calloc(4, sizeof(char*));
+  char * k;
+  char * m = "";
+
+    
+  //strseps for arguments
+  if (m != k){
+    k = strsep(&line, ">");
+    strsep(&line, " ");
+    arr[0] = k;
+  }
+  arr[1] = strsep(&line, " \n");
+ 
+  return arr;
+}
+
+
+//splits < to get separate lines
+char ** parse_less(char *line){
+  char** arr = calloc(4, sizeof(char*));
+  char * k;
+  char * m = "";
+
+    
+  //strseps for arguments
+  if (m != k){
+    k = strsep(&line, "<");
+    strsep(&line, " ");
+    arr[0] = k;
+  }
+  arr[1] = strsep(&line, " \n");
+ 
+  return arr;
+}
+
+
 //splits ; to get separate lines
-char ** parse_argssemi(char *line){
+char ** parse_semi(char *line){
   char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;
@@ -44,7 +110,7 @@ char ** parse_argssemi(char *line){
 
 
 //splits " " to get separate arguments
-char ** parse_argsspace(char *line){
+char ** parse_space(char *line){
   char** arr = calloc(5, sizeof(char*));
   int i = 0;
   char * k;

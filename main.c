@@ -17,7 +17,7 @@ int main(int argc, char * argv[]){
   int stat;
   int n;
   int i;
-
+  int fin, fout;
   //char test[100] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
@@ -33,63 +33,106 @@ int main(int argc, char * argv[]){
     char * input = malloc(sizeof(char *)); 
     fgets(input, 100, stdin);
     
-    char** command;
-    char** commandsemi;
- 
-    commandsemi = parse_argssemi(input);
+    char **command;
+    char **commandsemi;
+    char **commandpipe;
+    char **commandgreater;
+    char **commandless;
+
+    commandsemi = parse_semi(input);
 
     i = 0;
 
     while (i < 5){
-      command = parse_argsspace(commandsemi[i]);
+      //piping only
+      char readbuf[100];
+
+      commandpipe = parse_pipe(commandsemi[i]);
+      commandgreater = parse_greater(commandsemi[i]);
+      commandless = parse_less(commandsemi[i]);
+      command = parse_space(commandsemi[i]);
       i++;
 
-      char * first = command[0];
+      //found how popen works online and implemented it
+      if (commandpipe[0] != NULL && commandpipe[1] != NULL){
+	int fd = open(commandpipe[0], O_CREAT | O_RDONLY);
+	FILE *filein = popen(commandpipe[0],"r");
+	FILE *fileout = popen(commandpipe[1],"w");
 
-      //exits
-      if (first != NULL && strcmp(first, "exit") == 0){
-	printf("You exit now\n");
-	return 0;
-      }	
-     
-      //child process
-      if (fork() == 0){
+	fgets(readbuf,100,filein);
+	fputs(readbuf,fileout);
 
-	//piping only
-	if (command[1] != NULL && command[2] != NULL && strcmp(command[1], "|") == 0){
-	  printf("Starting\n");
-	  //int fd = open(command[0], O_READ);
-	  FILE *filein = popen(command[0],"r");
-	  FILE *fileout = popen(command[2],"w");
+	pclose(filein);
+	pclose(fileout);
+	close(fd);
+      }
 
-
+      //stack exchange provided me a summary of how redirection works
+      else if (commandless[0] != NULL && commandless[1] != NULL){
+	fin = dup(0);
+	int fd = open(commandless[1],  O_RDONLY);
+	dup2(fd, 0);
+	close(fd);
+	 
+	//child process
+	if (command[0] != NULL && execvp(commandless[0], commandless) == -1){
+	  printf("Something went wrong: %s\n", strerror(errno));
 	}
+		
+	dup2(0,fin);
+      }
 
+      else if (commandgreater[0] != NULL && commandgreater[1] != NULL){
+	fin = dup(0);
+	fout = dup(1);
 	
-	//cd
-	if (strcmp(first, "cd") == 0){
-	  if (chdir(command[1]) == -1)
-	    printf("Something went wrong: %s\n", strerror(errno));
-	}	
+	int fd = open(commandgreater[1],  O_CREAT | O_WRONLY);
+	int fd2 = open(commandgreater[0], O_RDONLY);
+	dup2(fd, 1);
+	dup2(fd2, 0);
+	close(fd);
+	close(fd2);
 
-		 
-	//do piping (with popen) and >, >>, <, <<
-	
-	else if (execvp(command[0], command) == -1){
+	if (command[0] != NULL && execvp("grep", commandgreater) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
 	}
 
+	dup2(0, fin);
+	dup2(1,fout);
       }
-      //parent process   
-      else{
-	waitpid(-1,&stat,0);
-	if (WIFEXITED(stat)){ 
-	  printf("parent done\n");
-	}	
-      }      
-    }    
-  }
-  return 0;
-}
 
-  
+      else{    
+	//printf("running: %s,%s\n", command[0], command[1]);
+
+	//exits
+	if (command[0] != NULL && strcmp(command[0], "exit") == 0){
+	  printf("You exit now\n");
+	  return 0;
+	}	
+     
+	//child process
+	if (fork() == 0){
+	
+	  //cd
+	  if (strcmp(command[0], "cd") == 0){
+	    if (chdir(command[1]) == -1)
+	      printf("Something went wrong: %s\n", strerror(errno));
+	  }	
+	
+	  else if (execvp(command[0], command) == -1){
+	    printf("Something went wrong: %s\n", strerror(errno));
+	  }
+
+	}
+	//parent process   
+	else{
+	  waitpid(-1,&stat,0);
+	  if (WIFEXITED(stat)){ 
+	    printf("\n");
+	  }	
+	}
+      }
+
+    }   
+  }
+}
