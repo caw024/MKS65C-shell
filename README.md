@@ -1,4 +1,5 @@
 # MKS65C-shell
+# Calvin Aw
 
 A description of what features your shell implements:
 The shell can fork + execute commands in a line (separated by semicolons) and redirect via stdin. cd and exit work properly.
@@ -39,3 +40,5 @@ char ** parse_semi(char *line);
 //arguments: char * (a string)<br />
 //fxn: parses spaces in a given line to get arguments<br />
 char ** parse_space(char *line);
+
+* I consulted stack overflow and other websites for some small portions of code as labeled inside it.
