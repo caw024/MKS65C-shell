@@ -237,7 +237,7 @@ int main(int argc, char * argv[]){
 
       }
 
-      printf("running: %s,%s\n", command[0], command[1]);
+      //printf("running: %s,%s\n", command[0], command[1]);
       
       if (command[0] == NULL)
 	break;
