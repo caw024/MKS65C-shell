@@ -190,6 +190,7 @@ int main(int argc, char * argv[]){
       i++;
 
       //found how popen works online and implemented it
+      //open pipes to work with
       if (commandpipe[0] != NULL && commandpipe[1] != NULL){
 	fd0 = open(commandpipe[0], O_CREAT | O_RDONLY);
 	//use less than to put result to less so output is ls
@@ -207,6 +208,7 @@ int main(int argc, char * argv[]){
       }
 
       //stack exchange provided me a summary of how redirection works
+      //changes stdin so that execvp works on them as inputs
       else if (commandless[0] != NULL && commandless[1] != NULL){
 	fd0 = open(commandless[1],  O_RDONLY);
 	dup2(fd0, 0);
@@ -222,6 +224,7 @@ int main(int argc, char * argv[]){
 
       }
 
+      //changes stdout so that execvp works on them as outputs
       else if (commandgreater[0] != NULL && commandgreater[1] != NULL){	
 	fd0 = open(commandgreater[1],  O_CREAT | O_WRONLY);
 	fd1 = open(commandgreater[0], O_RDONLY);
@@ -229,7 +232,6 @@ int main(int argc, char * argv[]){
 	dup2(fd1, 0);
 	close(fd0);
 	close(fd1);
-
 
 	/* if (command[0] != NULL && execvp("grep", commandgreater) == -1){ */
 	/*   printf("Something went wrong: %s\n", strerror(errno)); */
@@ -269,6 +271,7 @@ int main(int argc, char * argv[]){
 	}	
       }
 	
+      //replaces with original tools
       dup2(fout, 1);
       dup2(fin, 0);
       close(fin);
