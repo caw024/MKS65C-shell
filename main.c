@@ -18,6 +18,7 @@ int main(int argc, char * argv[]){
   int n;
   int i;
   int fin, fout;
+  int fd, fd2;
   //char test[100] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
@@ -55,7 +56,7 @@ int main(int argc, char * argv[]){
 
       //found how popen works online and implemented it
       if (commandpipe[0] != NULL && commandpipe[1] != NULL){
-	int fd = open(commandpipe[0], O_CREAT | O_RDONLY);
+	fd = open(commandpipe[0], O_CREAT | O_RDONLY);
 	FILE *filein = popen(commandpipe[0],"r");
 	FILE *fileout = popen(commandpipe[1],"w");
 
@@ -70,25 +71,27 @@ int main(int argc, char * argv[]){
       //stack exchange provided me a summary of how redirection works
       else if (commandless[0] != NULL && commandless[1] != NULL){
 	fin = dup(0);
-	int fd = open(commandless[1],  O_RDONLY);
+	fd = open(commandless[1],  O_RDONLY);
 	dup2(fd, 0);
 	close(fd);
 	 
 	//child process
 	if (command[0] != NULL && execvp(commandless[0], commandless) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
+	  dup2(0,fin);
 	}
-		
-	dup2(0,fin);
+	else{	
+	  dup2(0,fin);
+	}
       }
 
       else if (commandgreater[0] != NULL && commandgreater[1] != NULL){
 	fin = dup(0);
 	fout = dup(1);
 	
-	int fd = open(commandgreater[1],  O_CREAT | O_WRONLY);
-	int fd2 = open(commandgreater[0], O_RDONLY);
-	dup2(fd, 1);
+	fd = open(commandgreater[1],  O_CREAT | O_WRONLY);
+	fd2 = open(commandgreater[0], O_RDONLY);
+	dup2(fd, 1); //swap stdout
 	dup2(fd2, 0);
 	close(fd);
 	close(fd2);
@@ -96,7 +99,6 @@ int main(int argc, char * argv[]){
 	if (command[0] != NULL && execvp("grep", commandgreater) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
 	}
-
 	dup2(0, fin);
 	dup2(1,fout);
       }
