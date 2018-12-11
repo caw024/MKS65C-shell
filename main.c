@@ -84,6 +84,7 @@ int main(int argc, char * argv[]){
 	FILE *fileout = popen(commandpipe[1],"w");	
 	fputs(current,fileout);
 	pclose(fileout);
+	break;
 
       }
 
