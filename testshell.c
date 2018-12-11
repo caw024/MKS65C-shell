@@ -178,32 +178,38 @@ int main(int argc, char * argv[]){
     while (i < 5){
       //piping only
       char readbuf[100];
+      char current[100];
       fin = dup(STDIN_FILENO);
       fout = dup(STDOUT_FILENO);
   
       
-
       commandpipe = parse_pipe(commandsemi[i]);
       commandgreater = parse_greater(commandsemi[i]);
       commandless = parse_less(commandsemi[i]);
       command = parse_space(commandsemi[i]);
       i++;
 
-      //found how popen works online and implemented it
+            
+      if (command[0] == NULL)
+	break;
+
+      //found how popen works online and tried to implement it
       //open pipes to work with
       if (commandpipe[0] != NULL && commandpipe[1] != NULL){
-	fd0 = open(commandpipe[0], O_CREAT | O_RDONLY);
-	//use less than to put result to less so output is ls
+	//open command pipe
 	FILE *filein = popen(commandpipe[0],"r");
-	
-	FILE *fileout = popen(commandpipe[1],"w");
-	
-	fgets(readbuf,100,filein);
-	fputs(readbuf,fileout);
-	
+
+	//takes available parts and concatenates them into final string
+	while (fgets(readbuf, 1024, filein)){
+	  strcat(current, readbuf);
+	}
 	pclose(filein);
+
+
+	
+	FILE *fileout = popen(commandpipe[1],"w");	
+	fputs(current,fileout);
 	pclose(fileout);
-	close(fd0);
 
       }
 
@@ -240,9 +246,7 @@ int main(int argc, char * argv[]){
       }
 
       //printf("running: %s,%s\n", command[0], command[1]);
-      
-      if (command[0] == NULL)
-	break;
+
       
       //child process
       if (fork() == 0){
@@ -265,10 +269,7 @@ int main(int argc, char * argv[]){
       }
       //parent process   
       else{
-	waitpid(-1,&stat,0);
-	if (WIFEXITED(stat)){ 
-	  printf("\n");
-	}	
+	waitpid(-1,&stat,0);	
       }
 	
       //replaces with original tools
@@ -277,10 +278,7 @@ int main(int argc, char * argv[]){
       close(fin);
       close(fout);
 
-    } //end of while 1-5 loop
-
-  
-	
+    } //end of while 1-5 loop	
 
   } //end of while(1) loop
 }//end of main
