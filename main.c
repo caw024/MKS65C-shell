@@ -26,16 +26,16 @@ int main(int argc, char * argv[]){
   //char *input = test;
   while (1){
     
-    printf("\n-------------------------------\n");
-    char cwd[100];
+    //printf("\n-------------------------------\n");
+    char cwd[1024];
 
     //specific help from stack overflow to get random characters as outputs
-    if (getcwd(cwd, sizeof(cwd)) != NULL){
-      printf("cwd: %s: ",cwd);
-    }
-    printf("\n");
+    // if (getcwd(cwd, sizeof(cwd)) != NULL){
+    //printf("cwd: %s: ",cwd);
+    //}
+    //printf("\n");
     char * input = malloc(sizeof(char *)); 
-    fgets(input, 100, stdin);
+    fgets(input, 1024, stdin);
     
     char **command;
     char **commandsemi;
@@ -51,8 +51,8 @@ int main(int argc, char * argv[]){
 
     while (i < 5){
       //piping only
-      char readbuf[100];
-      char current[100];
+      char readbuf[1024];
+      char current[1024];
       fin = dup(STDIN_FILENO);
       fout = dup(STDOUT_FILENO);
   
