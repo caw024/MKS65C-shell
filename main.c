@@ -24,12 +24,15 @@ int main(int argc, char * argv[]){
   char readbuf[1024];
   char current[1024];
 
+
   //char test[100] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
-
+    
     //printf("\n-------------------------------\n");
     char cwd[1024];
+
+  
 
     //specific help from stack overflow to get random characters as outputs
     // if (getcwd(cwd, sizeof(cwd)) != NULL){
@@ -62,7 +65,11 @@ int main(int argc, char * argv[]){
       command = parse_space(commandsemi[i]);
       i++;
 
-            
+
+      if (isatty(STDIN_FILENO)){
+	printf("$\n");
+      }
+      
       if (command[0] == NULL)
 	break;
 
@@ -166,6 +173,7 @@ int main(int argc, char * argv[]){
       dup2(fin, 0);
       close(fin);
       close(fout);
+      free(input);
 
     } //end of while 1-5 loop	
 
