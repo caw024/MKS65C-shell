@@ -3,19 +3,16 @@ Calvin Aw
 
 A description of what features your shell implements:<br />
 
-The shell can fork + execute commands in a line (separated by semicolons) and redirect via stdin. cd and exit work properly.
+The shell can fork + execute commands in a line (separated by semicolons) and redirect as well as some piping.
 
 
 A description of what features you attempted to implement but were unsuccessful: <br />
 
-I couldn't get redirecting stdout (returns "input file is not output file") and piping (returns something, but not what we want) to work out properly (progress on them can be found in comments section of code).
-
+Extraneous spaces in the command line might make a command invalid. <br />
 
 Any bugs or things you want me to know about your program: <br />
 
-* Extraneous spaces in the command line might make a command invalid. <br />
-* Redirecting via stdin can cause the program to end (although it does run).
-
+I couldn't figure out why ls -l | wc doesn't work excatly the way you want it (although it does give a response). Additionally, running Mr. K's ./test.sh worked properly, but looped around for some reasons. The end result is successful implementation of the entire code, but then going through the entire code again.
 
 A copy of every function header:
 
@@ -45,4 +42,4 @@ char ** parse_semi(char *line);
 char ** parse_space(char *line);
 
 Important Note: <br />
-I consulted stack overflow and other websites for some help on pieces of code I had trouble with (and still don't work). The specific parts are listed inside the code.
+I consulted stack overflow and other websites for some help on pieces of code I had trouble with (and worked several hours on). The specific parts are listed inside the code.
