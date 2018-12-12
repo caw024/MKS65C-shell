@@ -8,11 +8,11 @@ The shell can fork + execute commands in a line (separated by semicolons) and re
 
 A description of what features you attempted to implement but were unsuccessful: <br />
 
-Extraneous spaces in the command line might make a command invalid. <br />
+Extraneous spaces in the command line might make a command invalid. Also, my code can read at most one line with fgets <br />
 
 Any bugs or things you want me to know about your program: <br />
 
-I couldn't figure out why ls -l | wc doesn't work excatly the way you want it (although it does give a response). Additionally, running Mr. K's ./test.sh worked properly, but looped around for some reasons. The end result is successful implementation of the entire code, but then going through the entire code again.
+I couldn't figure out why ls -l | wc doesn't work exactly the way you want it (it givse an incorrect response). 
 
 A copy of every function header:
 
