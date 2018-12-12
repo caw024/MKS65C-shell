@@ -8,7 +8,7 @@ The shell can fork + execute commands in a line (separated by semicolons) and re
 
 A description of what features you attempted to implement but were unsuccessful: <br />
 
-Extraneous spaces in the command line might make a command invalid. Also, my code can read at most one line with fgets <br />
+Extraneous spaces in the command line might make a command invalid. <br />
 
 Any bugs or things you want me to know about your program: <br />
 
