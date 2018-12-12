@@ -21,11 +21,13 @@ int main(int argc, char * argv[]){
   int i;
   int fin, fout;
   int fd0, fd1;
-  int ret;
+  char readbuf[1024];
+  char current[1024];
+
   //char test[100] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
-    
+
     //printf("\n-------------------------------\n");
     char cwd[1024];
 
@@ -42,17 +44,14 @@ int main(int argc, char * argv[]){
     char **commandpipe;
     char **commandgreater;
     char **commandless;
-    char **commandsub;
-
 
     commandsemi = parse_semi(input);
 
     i = 0;
 
+    //repeats based on parsed semis
     while (i < 5){
       //piping only
-      char readbuf[1024];
-      char current[1024];
       fin = dup(STDIN_FILENO);
       fout = dup(STDOUT_FILENO);
   
@@ -67,6 +66,12 @@ int main(int argc, char * argv[]){
       if (command[0] == NULL)
 	break;
 
+      if (strcmp(command[0], "exit") == 0){
+	printf("Exiting\n");
+	printf("-------------------------------\n");
+	exit(0);
+      }
+
       //found how popen works online and tried to implement it
       //open pipes to work with
       if (commandpipe[1] != NULL){
@@ -79,7 +84,6 @@ int main(int argc, char * argv[]){
 	}
 	pclose(filein);
 
-
 	
 	FILE *fileout = popen(commandpipe[1],"w");	
 	fputs(current,fileout);
@@ -90,13 +94,14 @@ int main(int argc, char * argv[]){
         strcpy(current, "");
 	
 	break;
-
       }
 
       //stack exchange provided me a summary of how redirection works
       //changes stdin so that execvp works on them as inputs
       else if (commandless[1] != NULL){
 	fd0 = open(commandless[1],  O_RDONLY);
+	if (fd0 == -1)
+	  printf("Something went wrong: %s\n", strerror(errno));
 	dup2(fd0, 0);
 	close(fd0);
 	
@@ -113,9 +118,13 @@ int main(int argc, char * argv[]){
       //changes stdout so that execvp works on them as outputs
       else if (commandgreater[1] != NULL){	
 	fd0 = open(commandgreater[1],  O_CREAT | O_WRONLY);
+	if (fd0 == -1)
+	  printf("Something went wrong: %s\n", strerror(errno));
 	fd1 = open(commandgreater[0], O_RDONLY);
+	if (fd1 == -1)
+	  printf("Something went wrong: %s\n", strerror(errno));
 	dup2(fd0, 1); //swap stdout
-	dup2(fd1, 0);
+	dup2(fd1, 0); //swap stdin
 	close(fd0);
 	close(fd1);
 
@@ -125,40 +134,33 @@ int main(int argc, char * argv[]){
 
       }
 
-      //printf("running: %s,%s\n", command[0], command[1]);
+      //printf("\nrunning: %s,%s,%s\n", command[0], command[1], command[2]);
+      //sleep(1);
 
-      	if (strcmp(command[0], "exit") == 0){
-	  printf("You exit now\n");
-	  return 0;
-	  return 0;
-	}
-      
       //child process
       if (fork() == 0){
-	//exits
 
-
-	//cd
-	if (strcmp(command[0], "cd") == 0){
-	  if (chdir(command[1]) == -1)
-	    printf("Something went wrong: %s\n", strerror(errno));
-	  if (getcwd(cwd, sizeof(cwd)) != NULL){
-	    printf("cwd: %s \n",cwd);
-	  }
-	}	
+	//cd 
+	if (strcmp(command[0], "cd") == 0){ 
+	  if (chdir(command[1]) == -1) 
+	    printf("Something went wrong: %s\n", strerror(errno)); 
+	  if (getcwd(cwd, sizeof(cwd)) != NULL){ 
+	    printf("cwd: %s \n",cwd); 
+	  } 
+	}	 
 		
-	else if (execvp(command[0], command) == -1){
-	  printf("Something went wrong: %s\n", strerror(errno));
+	else if (execvp(command[0], command) == -1){ 
+	  printf("Something went wrong: %s\n", strerror(errno)); 
 	}
 
-	//printf("\n");
-
       }
-      //parent process   
       else{
 	waitpid(-1,&stat,0);
       }
-	
+
+      //printf("\n");
+
+
       //replaces with original tools
       dup2(fout, 1);
       dup2(fin, 0);
@@ -168,4 +170,8 @@ int main(int argc, char * argv[]){
     } //end of while 1-5 loop	
 
   } //end of while(1) loop
+  return 0;
 }//end of main
+
+
+
