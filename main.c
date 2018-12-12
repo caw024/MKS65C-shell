@@ -34,7 +34,7 @@ int main(int argc, char * argv[]){
     //printf("cwd: %s: ",cwd);
     //}
     //printf("\n");
-    char * input = malloc(sizeof(char *)); 
+    char * input = malloc(10 * sizeof(char *)); 
     fgets(input, 1024, stdin);
     
     char **command;
@@ -69,7 +69,7 @@ int main(int argc, char * argv[]){
 
       //found how popen works online and tried to implement it
       //open pipes to work with
-      if (commandpipe[0] != NULL && commandpipe[1] != NULL){
+      if (commandpipe[1] != NULL){
 	//open command pipe
 	FILE *filein = popen(commandpipe[0],"r");
 
@@ -84,13 +84,18 @@ int main(int argc, char * argv[]){
 	FILE *fileout = popen(commandpipe[1],"w");	
 	fputs(current,fileout);
 	pclose(fileout);
+
+	//reset readbuf and current
+	strcpy(readbuf, "");
+        strcpy(current, "");
+	
 	break;
 
       }
 
       //stack exchange provided me a summary of how redirection works
       //changes stdin so that execvp works on them as inputs
-      else if (commandless[0] != NULL && commandless[1] != NULL){
+      else if (commandless[1] != NULL){
 	fd0 = open(commandless[1],  O_RDONLY);
 	dup2(fd0, 0);
 	close(fd0);
@@ -106,7 +111,7 @@ int main(int argc, char * argv[]){
       }
 
       //changes stdout so that execvp works on them as outputs
-      else if (commandgreater[0] != NULL && commandgreater[1] != NULL){	
+      else if (commandgreater[1] != NULL){	
 	fd0 = open(commandgreater[1],  O_CREAT | O_WRONLY);
 	fd1 = open(commandgreater[0], O_RDONLY);
 	dup2(fd0, 1); //swap stdout
@@ -122,29 +127,36 @@ int main(int argc, char * argv[]){
 
       //printf("running: %s,%s\n", command[0], command[1]);
 
+      	if (strcmp(command[0], "exit") == 0){
+	  printf("You exit now\n");
+	  return 0;
+	  return 0;
+	}
       
       //child process
       if (fork() == 0){
 	//exits
-	if (strcmp(command[0], "exit") == 0){
-	  printf("You exit now\n");
-	  return 0;
-	}
+
 
 	//cd
 	if (strcmp(command[0], "cd") == 0){
 	  if (chdir(command[1]) == -1)
 	    printf("Something went wrong: %s\n", strerror(errno));
+	  if (getcwd(cwd, sizeof(cwd)) != NULL){
+	    printf("cwd: %s \n",cwd);
+	  }
 	}	
 		
 	else if (execvp(command[0], command) == -1){
 	  printf("Something went wrong: %s\n", strerror(errno));
 	}
 
+	//printf("\n");
+
       }
       //parent process   
       else{
-	waitpid(-1,&stat,0);	
+	waitpid(-1,&stat,0);
       }
 	
       //replaces with original tools

@@ -19,12 +19,13 @@ char ** parse_pipe(char *line){
   char * k;
   char * m = "";
 
-  for(i; i < 3; i++){
+  for(i; i < 4; i++){
     
     //strseps for arguments
     if (m != k){
       k = strsep(&line, "|");
       strsep(&line, " ");
+
       arr[i] = k;
     }
     else if (m == k){
@@ -32,6 +33,8 @@ char ** parse_pipe(char *line){
     }
      
     m = line;
+    //printf("string to array: %s", k);
+
   }  
   return arr;
 }
@@ -130,7 +133,9 @@ char ** parse_space(char *line){
     m = line;
     if (m == " " || strsep(&m, "") == NULL)
       arr[i] = NULL;
-
+    //printf("; in array[%d]:%s\n", i, arr[i]);
+    //printf("; still need to parse:%s\n", line);
+    
   }  
   return arr;
 }
@@ -148,20 +153,19 @@ int main(int argc, char * argv[]){
   int fin, fout;
   int fd0, fd1;
   int ret;
-  //char test[100] = "ls -l ; echo hello ; ls -a ";
+  //char test[1024] = "ls -l ; echo hello ; ls -a ";
   //char *input = test;
   while (1){
     
     printf("\n-------------------------------\n");
-    char cwd[100];
+    char cwd[1024];
 
     //specific help from stack overflow to get random characters as outputs
-    if (getcwd(cwd, sizeof(cwd)) != NULL){
-      printf("cwd: %s: ",cwd);
-    }
-    printf("\n");
+    // if (getcwd(cwd, sizeof(cwd)) != NULL){
+    // printf("cwd: %s: ",cwd);
+    //}
     char * input = malloc(sizeof(char *)); 
-    fgets(input, 100, stdin);
+    fgets(input, 1024, stdin);
     
     char **command;
     char **commandsemi;
@@ -177,11 +181,12 @@ int main(int argc, char * argv[]){
 
     while (i < 5){
       //piping only
-      char readbuf[100];
-      char current[100];
+      char readbuf[1024];
+      char current[1024];
       fin = dup(STDIN_FILENO);
       fout = dup(STDOUT_FILENO);
-  
+      printf("\ncommandsemi[0] %s", commandsemi[0]);
+
       
       commandpipe = parse_pipe(commandsemi[i]);
       commandgreater = parse_greater(commandsemi[i]);
@@ -195,28 +200,33 @@ int main(int argc, char * argv[]){
 
       //found how popen works online and tried to implement it
       //open pipes to work with
-      if (commandpipe[0] != NULL && commandpipe[1] != NULL){
+      if (commandpipe[1] != NULL){
 	//open command pipe
 	FILE *filein = popen(commandpipe[0],"r");
+	printf("\ncommandpipe[0]: %s", commandpipe[0]);
 
 	//takes available parts and concatenates them into final string
 	while (fgets(readbuf, 1024, filein)){
 	  strcat(current, readbuf);
+	  //printf("readbuf: %s", readbuf);
 	}
 	pclose(filein);
 
-
-	
 	FILE *fileout = popen(commandpipe[1],"w");	
 	fputs(current,fileout);
 	pclose(fileout);
+
+	//reset readbuf and current
+	strcpy(readbuf, "");
+        strcpy(current, "");
+
 	break;
 
       }
 
       //stack exchange provided me a summary of how redirection works
       //changes stdin so that execvp works on them as inputs
-      else if (commandless[0] != NULL && commandless[1] != NULL){
+      else if (commandless[1] != NULL){
 	fd0 = open(commandless[1],  O_RDONLY);
 	dup2(fd0, 0);
 	close(fd0);
@@ -232,7 +242,7 @@ int main(int argc, char * argv[]){
       }
 
       //changes stdout so that execvp works on them as outputs
-      else if (commandgreater[0] != NULL && commandgreater[1] != NULL){	
+      else if (commandgreater[1] != NULL){	
 	fd0 = open(commandgreater[1],  O_CREAT | O_WRONLY);
 	fd1 = open(commandgreater[0], O_RDONLY);
 	dup2(fd0, 1); //swap stdout
@@ -248,14 +258,14 @@ int main(int argc, char * argv[]){
 
       //printf("running: %s,%s\n", command[0], command[1]);
 
+      //exits
+      if (strcmp(command[0], "exit") == 0){
+	printf("You exit now\n");
+	return 0;
+      }
       
       //child process
       if (fork() == 0){
-	//exits
-	if (strcmp(command[0], "exit") == 0){
-	  printf("You exit now\n");
-	  return 0;
-	}
 
 	//cd
 	if (strcmp(command[0], "cd") == 0){

@@ -16,7 +16,7 @@
 
 //splits | to get separate lines
 char ** parse_pipe(char *line){
-  char** arr = calloc(4, sizeof(char*));
+  char** arr = calloc(4, 10 * sizeof(char *));
   int i = 0;
   char * k;
   char * m = "";
@@ -43,7 +43,7 @@ char ** parse_pipe(char *line){
 
 //splits > to get separate lines
 char ** parse_greater(char *line){
-  char** arr = calloc(4, sizeof(char*));
+  char** arr = calloc(4, sizeof(char *));
   char * k;
   char * m = "";
 
@@ -62,7 +62,7 @@ char ** parse_greater(char *line){
 
 //splits < to get separate lines
 char ** parse_less(char *line){
-  char** arr = calloc(4, sizeof(char*));
+  char** arr = calloc(4, 10 * sizeof(char *));
   char * k;
   char * m = "";
 
@@ -81,7 +81,7 @@ char ** parse_less(char *line){
 
 //splits ; to get separate lines
 char ** parse_semi(char *line){
-  char** arr = calloc(5, sizeof(char*));
+  char** arr = calloc(5, 10 * sizeof(char *));
   int i = 0;
   char * k;
   char * m = "";
@@ -111,7 +111,7 @@ char ** parse_semi(char *line){
 
 //splits " " to get separate arguments
 char ** parse_space(char *line){
-  char** arr = calloc(5, sizeof(char*));
+  char** arr = calloc(5, 10 * sizeof(char*));
   int i = 0;
   char * k;
   char * m = "  ";
