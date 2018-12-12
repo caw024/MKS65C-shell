@@ -23,6 +23,7 @@ int main(int argc, char * argv[]){
   int fd0, fd1;
   char readbuf[1024];
   char current[1024];
+  int pid;
 
 
   //char test[100] = "ls -l ; echo hello ; ls -a ";
@@ -31,13 +32,9 @@ int main(int argc, char * argv[]){
     
     //printf("\n-------------------------------\n");
     char cwd[1024];
-
   
 
     //specific help from stack overflow to get random characters as outputs
-    // if (getcwd(cwd, sizeof(cwd)) != NULL){
-    //printf("cwd: %s: ",cwd);
-    //}
     //printf("\n");
     char * input = malloc(10 * sizeof(char *)); 
     fgets(input, 1024, stdin);
@@ -54,6 +51,7 @@ int main(int argc, char * argv[]){
 
     //repeats based on parsed semis
     while (i < 5){
+
       //piping only
       fin = dup(STDIN_FILENO);
       fout = dup(STDOUT_FILENO);
@@ -66,17 +64,16 @@ int main(int argc, char * argv[]){
       i++;
 
 
-      if (isatty(STDIN_FILENO)){
-	printf("$\n");
-      }
+      //if (isatty(STDIN_FILENO)){
+      //}
       
       if (command[0] == NULL)
 	break;
 
       if (strcmp(command[0], "exit") == 0){
+
 	printf("Exiting\n");
-	printf("-------------------------------\n");
-	exit(0);
+	return 0;
       }
 
       //found how popen works online and tried to implement it
@@ -144,25 +141,31 @@ int main(int argc, char * argv[]){
       //printf("\nrunning: %s,%s,%s\n", command[0], command[1], command[2]);
       //sleep(1);
 
-      //child process
-      if (fork() == 0){
-
-	//cd 
-	if (strcmp(command[0], "cd") == 0){ 
-	  if (chdir(command[1]) == -1) 
-	    printf("Something went wrong: %s\n", strerror(errno)); 
-	  if (getcwd(cwd, sizeof(cwd)) != NULL){ 
-	    printf("cwd: %s \n",cwd); 
-	  } 
-	}	 
-		
-	else if (execvp(command[0], command) == -1){ 
-	  printf("Something went wrong: %s\n", strerror(errno)); 
+      if (strcmp(command[0], "cd") == 0){ 
+	if (chdir(command[1]) == -1) 
+	  printf("Something went wrong: %s\n", strerror(errno));
+	  
+	if (getcwd(cwd, sizeof(cwd)) != NULL){ 
+	  printf("cwd: %s \n",cwd); 
 	}
-
       }
+
       else{
-	waitpid(-1,&stat,0);
+	//child process
+	pid = fork();
+	if (pid < 0){
+	  printf("Something went wrong: %s\n", strerror(errno));
+	  exit(1);
+	}
+	else if (pid == 0){      		
+	  if (execvp(command[0], command) == -1){ 
+	    printf("Something went wrong: %s\n", strerror(errno)); 
+	  }
+	}
+      
+	else{
+	  waitpid(-1,&stat,0);
+	}
       }
 
       //printf("\n");
@@ -174,6 +177,7 @@ int main(int argc, char * argv[]){
       close(fin);
       close(fout);
       free(input);
+
 
     } //end of while 1-5 loop	
 
