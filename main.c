@@ -83,7 +83,7 @@ int main(int argc, char * argv[]){
 	FILE *filein = popen(commandpipe[0],"r");
 
 	//takes available parts and concatenates them into final string
-	while (fgets(readbuf, 1024, filein)){
+	while (fgets(readbuf, 2048, filein)){
 	  strcat(current, readbuf);
 	}
 	pclose(filein);
